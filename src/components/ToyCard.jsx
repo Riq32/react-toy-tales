@@ -1,50 +1,51 @@
-import React from "react";
+function ToyCard({ id, name, image, likes, deleteToy, updateToy}) {
 
-function ToyCard({ toy, onDeleteToy, onUpdateToy }) {
-  const { id, name, image, likes } = toy;
-
-  const handleDonate = () => {
+  const handleDelete = () => {
     fetch(`http://localhost:3001/toys/${id}`, {
-      method: "DELETE",
+      method: "DELETE"
     })
-      .then((res) => res.json())
-      .then(() => {
-        onDeleteToy(id);
-      });
+      .then(r => {
+        if (!r.ok) throw new Error("failed to delete");
+        deleteToy(id);
+      })
+      .catch(error => console.log(error.message));
   };
 
   const handleLike = () => {
-    const updateObj = {
-      likes: likes + 1,
-    };
-
-    fetch(`http://localhost:3001/toys/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updateObj),
+  fetch(`http://localhost:3001/toys/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      likes: likes + 1
     })
-      .then((res) => res.json())
-      .then((updatedToy) => {
-        onUpdateToy(updatedToy);
-      });
-  };
+  })
+    .then(r => {
+      if (!r.ok) throw new Error("failed to like toy");
+      return r.json();
+    })
+    .then(updatedToy => {
+      updateToy(updatedToy);
+    })
+    .catch(err => console.log(err.message));
+};
 
   return (
     <div className="card" data-testid="toy-card">
       <h2>{name}</h2>
+
       <img
-        src={image}
+        src={image || "https://via.placeholder.com/150"}
         alt={name}
         className="toy-avatar"
       />
-      {/* Note the trailing space inside the paragraph to match the test's exact text string */}
+
       <p>{likes} Likes </p>
-      <button className="like-btn" onClick={handleLike}>
-        Like {"<3"}
-      </button>
-      <button className="del-btn" onClick={handleDonate}>
+
+      <button onClick={handleLike} className="like-btn">Like {"<3"}</button>
+
+      <button onClick={handleDelete} className="del-btn">
         Donate to GoodWill
       </button>
     </div>
